@@ -35,10 +35,10 @@ function SearchTree(LessThanOrEqual, Equal) {
 }
 
 SearchTree.prototype.Search = function(key) {
-    if (root == null) return null;
+    if (this.root == null) return null;
 
     //search the tree iteratively
-    var position = root;
+    var position = this.root;
     while (position != null) {
         if (Equal(key, position.key))
             return position;
