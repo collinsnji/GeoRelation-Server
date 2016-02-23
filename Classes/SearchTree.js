@@ -8,7 +8,7 @@
 
 function SearchTree(LessThanOrEqual, Equal) {
 
-    var root = null;
+    this.root = null;
 
     function TreeNode(key, value) {
         this.key = key;
@@ -41,7 +41,7 @@ SearchTree.prototype.Search = function(key) {
     var position = root;
     while (position != null) {
         if (Equal(key, position.key))
-            return position.value;
+            return position;
         else if (LessThanOrEqual(key, position.key)) {
             position = position.leftChild;
         } else {
@@ -54,12 +54,12 @@ SearchTree.prototype.Search = function(key) {
 
 SearchTree.prototype.Insert = function(key, value) {
     var newNode = new TreeNode(key, value);
-    if (root == null) {
-        root = newNode;
+    if (this.root == null) {
+        this.root = newNode;
         return newNode;
     }
 
-    var position = root;
+    var position = this.root;
     while (position != null) {
 
         var condition = LessThanOrEqual(key, position.key);
@@ -77,5 +77,47 @@ SearchTree.prototype.Insert = function(key, value) {
     }
 
     return null;
+
+};
+
+//Severs the node from it's parent
+function sever(TreeNode) {
+    if (TreeNode.parent.leftChild === TreeNode)
+        TreeNode.parent.leftChild = null;
+    else
+        TreeNode.parent.rightChild = null;
+    return TreeNode.parent;
+}
+
+SearchTree.prototype.Remove = function(TreeNode) {
+
+
+    //CASE 1: The node has no children
+    if (TreeNode.leftChild == null && TreeNode.rightChild == null) {
+        if (TreeNode == this.root) {
+            delete this.root;
+        } else {
+            sever(TreeNode);
+        }
+    }
+
+    //CASE 2: The node has only a left sided child
+    if (TreeNode.leftChild != null && TreeNode.rightChild == null) {
+        sever(TreeNode).leftChild =  TreeNode.leftChild;
+    }
+
+    if (TreeNode.leftChild == null && TreeNode.rightChild != null) {
+        sever(TreeNode).rightChild = TreeNode.rightChild;
+    }
+
+    //CASE 3: The node has 2 children recursion is necessary
+    if (TreeNode.leftChild != null && TreeNode.rightChild != null) {
+        //Take it's in-order child (right)
+        if (TreeNode == this.root) {
+            //special case
+            this.root = TreeNode.rightChild;
+
+        }
+    }
 
 };
