@@ -1,6 +1,6 @@
 // addon.cc
 #include <node.h>
-#include "myobject.h"
+#include "MyObject.h"
 
 namespace Addon {
 

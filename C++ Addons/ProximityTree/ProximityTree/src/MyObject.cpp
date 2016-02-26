@@ -1,5 +1,5 @@
 // myobject.cc
-#include "myobject.h"
+#include "MyObject.h"
 
 namespace Addon {
 
