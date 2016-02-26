@@ -82,7 +82,7 @@ SearchTree.prototype.Insert = function(key, value) {
 
 //Severs the node from it's parent
 function sever(TreeNode) {
-    if (TreeNode.parent.leftChild === TreeNode)
+    if (TreeNode.parent.leftChild == TreeNode)
         TreeNode.parent.leftChild = null;
     else
         TreeNode.parent.rightChild = null;
@@ -117,6 +117,14 @@ SearchTree.prototype.Remove = function(TreeNode) {
             //special case
             this.root = TreeNode.rightChild;
 
+        } else {
+            var parent = TreeNode.parent;
+            TreeNode.parent = null;
+            if (parent.leftChild == TreeNode)
+                parent.leftChild = TreeNode.rightChild;
+            else
+                parent.rightChild = TreeNode.rightChild;
+            //TODO: rewrite in C++ and physically harm myself afterwards
         }
     }
 
