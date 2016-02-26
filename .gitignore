@@ -4,3 +4,9 @@ node_modules/
 *.sdf
 *.vcxproj
 *.filters
+*.opensdf
+*.tlog
+*.lastbuildstate
+*.idb
+*.exp
+*.node
