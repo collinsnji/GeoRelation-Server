@@ -5,11 +5,11 @@
 #define M_PI           3.14159265358979323846  /* pi */
 #endif
 
-static double toRad(double x) {
+static inline double toRad(double x) {
 	return x * M_PI / 180.0;
 }
 
-static double haversine(const double lat1, 
+static inline double haversine(const double lat1, 
 						const double lon1, 
 						const double lat2, 
 						const double lon2) {
@@ -25,4 +25,8 @@ static double haversine(const double lat1,
 	double d = R * c;
 
 	return d;
+}
+
+static inline int32_t Max(int32_t a, int32_t b) {
+	return (a > b) ? a : b;
 }

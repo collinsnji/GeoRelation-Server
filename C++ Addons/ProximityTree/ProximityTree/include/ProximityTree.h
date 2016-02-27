@@ -11,12 +11,16 @@ class ProximityTree {
 public:
 	struct Node {
 		int32_t _nodeID = -1;
+		bool active = false;
 		double global_dist; //sorted by global_dist
 		double latitude;
 		double longitude;
-		Node* leftChild;
-		Node* rightChild;
-		Node* parent;
+
+		int16_t height = 0;
+
+		int32_t leftChild = -1;
+		int32_t rightChild = -1;
+		int32_t parent = -1;
 		bool isInitialized() const { return _nodeID != -1; }
 	};
 
