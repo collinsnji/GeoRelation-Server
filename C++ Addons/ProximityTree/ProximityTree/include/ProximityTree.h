@@ -11,7 +11,6 @@ class ProximityTree {
 public:
 	struct Node {
 		int32_t _nodeID = -1;
-		bool active = false;
 		double global_dist; //sorted by global_dist
 		double latitude;
 		double longitude;
@@ -24,13 +23,11 @@ public:
 		bool isInitialized() const { return _nodeID != -1; }
 	};
 
-	ProximityTree(int max_size, double ref_lat, double ref_long);
+	ProximityTree(int capacity, double ref_lat, double ref_long);
 	void Insert(double latitude, double longitude);
-	void InsertAt(uint32_t position, Node* parent, bool leftChild) {
-
-	}
 
 	Node* getNodeID(uint32_t id) {
+		if (id < 0 || id >= capacity) return nullptr;
 		Node* ptr = _array + id;
 		return (ptr->_nodeID != -1) ? ptr : nullptr;
 	}
@@ -38,6 +35,17 @@ public:
 	~ProximityTree();
 
 private:
+
+	inline uint32_t Height(uint32_t index);
+
+	inline uint32_t getBalance(uint32_t index);
+
+	//AVL Tree leftRotate implementation
+	uint32_t leftRotate(uint32_t x);
+	uint32_t rightRotate(uint32_t y);
+
+	int capacity;
+
 	Node* _array;
 	const double ref_lat, ref_long;
 	uint32_t position = 0u;
