@@ -9,16 +9,16 @@ ProximityTree::ProximityTree(int capacity, double ref_lat, double ref_long)
 	this->capacity = capacity;
 }
 
-void ProximityTree::Insert(double latitude, double longitude)
+ProximityTree::Node* ProximityTree::Insert(double latitude, double longitude)
 {
 	double global_dist = haversine(ref_lat, ref_long, latitude, longitude);
-
-	//Find position for insertion
 	
-	//Check if the root is defined
-	if (!_array[0].isInitialized()) {
+	uint32_t node_id = initNode(latitude, longitude, global_dist);
+	return getNodeID(node_id);
+}
 
-	}
+uint32_t ProximityTree::RInsert(uint32_t index, double key)
+{
 
 }
 
@@ -40,6 +40,18 @@ inline uint32_t ProximityTree::getBalance(uint32_t index)
 	Node& node = _array[index];
 	return (node.isInitialized()) ?
 		Height(node.leftChild) - Height(node.rightChild) : 0;
+}
+
+uint32_t ProximityTree::initNode(double lat, double lon, double dist)
+{
+	//TODO: Add functionality such that removed nodes get their places re used by new nodes
+
+	Node& node = _array[position];
+	node._nodeID = position++;
+	node.global_dist = dist;
+	node.latitude = lat;
+	node.longitude = lon;
+	return node._nodeID;
 }
 
 //AVL Tree leftRotate implementation
@@ -72,6 +84,9 @@ uint32_t ProximityTree::leftRotate(uint32_t x)
 	node_x.height = Max(Height(node_x.leftChild), Height(node_x.rightChild)) + 1;
 	node_y.height = Max(Height(node_y.leftChild), Height(node_y.rightChild)) + 1;
 
+	if (node_y.isRoot())
+		root = node_y._nodeID;
+
 	return y; 
 
 }
@@ -93,11 +108,24 @@ uint32_t ProximityTree::rightRotate(uint32_t y)
 	node_y.parent = x;
 
 	if (node_T != nullptr) 
-		node_T->parent = x;
-
-	node_y.leftChild = T;
-	if (node_T != nullptr)
 		node_T->parent = y;
 
+	Node* orig_parent = getNodeID(node_x.parent);
+	if (orig_parent != nullptr) {
+		if (orig_parent->leftChild == y)
+			orig_parent->leftChild = x;
+		else
+			orig_parent->rightChild = x;
+	}
+
+	node_x.height = Max(Height(node_x.leftChild), Height(node_x.rightChild)) + 1;
+	node_y.height = Max(Height(node_y.leftChild), Height(node_y.rightChild)) + 1;
+
+	if (node_x.isRoot())
+		root = node_x._nodeID;
+
+	return x;
+
 }
+
 
