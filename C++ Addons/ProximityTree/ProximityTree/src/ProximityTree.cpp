@@ -1,21 +1,23 @@
 
 #include "ProximityTree.h"
 
+using namespace ProximityTree_Addon;
+
 //Constructor 
 ProximityTree::ProximityTree(int capacity, double ref_lat, double ref_long)
 	: ref_lat(ref_lat), ref_long(ref_long)
 {
 	_array = new Node[capacity];
-	this->capacity = capacity;
+	this->capacity = static_cast<uint32_t>(capacity);
 }
 
-ProximityTree::Node* ProximityTree::Insert(double latitude, double longitude)
+uint32_t ProximityTree::Insert(double latitude, double longitude)
 {
 	double global_dist = haversine(ref_lat, ref_long, latitude, longitude);
 	
 	insert_index = initNode(latitude, longitude, global_dist);
 	RInsert(insert_index, global_dist);
-	return getNodeID(insert_index);
+	return insert_index;
 }
 
 uint32_t ProximityTree::RInsert(uint32_t index, double dist)
