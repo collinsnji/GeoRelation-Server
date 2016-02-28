@@ -26,10 +26,11 @@ uint32_t ProximityTree::Insert(double latitude, double longitude)
 uint32_t ProximityTree::RInsert(uint32_t index, double dist)
 {
 	//get a reference to the node
-	Node& node = _array[index];
-	if (!node.isInitialized()) {
+	if (index == -1 || size == 0) { 
 		return insert_index;
 	}
+
+	Node& node = _array[index];
 
 	if (dist < _array[index].global_dist)
 		node.leftChild = RInsert(node.leftChild, dist);
