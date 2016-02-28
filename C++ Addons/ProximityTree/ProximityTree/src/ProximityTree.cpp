@@ -175,4 +175,83 @@ uint32_t ProximityTree::rightRotate(uint32_t y)
 
 }
 
+void ProximityTree_Addon::ProximityTree::Remove(uint32_t node_id)
+{
+	
+}
+
+uint32_t ProximityTree_Addon::ProximityTree::RRemove(uint32_t index, double dist)
+{
+
+	if (index == -1 || !_array[index].isInitialized())
+		return index;
+
+	Node& node = _array[index];
+
+	if (dist < node.global_dist)
+		node.leftChild = RRemove(node.leftChild, dist);
+
+	else if (dist > node.global_dist)
+		node.rightChild = RRemove(node.rightChild, dist);
+
+	else 
+	{
+
+		if (node.leftChild == -1 && node.rightChild == -1) 
+		{
+			sever(node);
+			clearNode(index);
+		}
+		else if (node.leftChild != -1 && node.rightChild == -1) {
+			sever(node, node.leftChild);
+			clearNode(index);
+		}
+		else if (node.leftChild == -1 && node.rightChild != -1) {
+			sever(node, node.rightChild);
+			clearNode(index);
+		}
+		else {
+
+		}
+
+	}
+
+	return index;
+}
+
+inline void ProximityTree_Addon::ProximityTree::sever(Node& node, int32_t val /*= -1*/)
+{
+	if (node.parent != -1) {
+		Node& parent = _array[node.parent];
+		if (val != -1)
+			_array[val].parent = parent._nodeID;
+		if (parent.leftChild == node._nodeID)
+			parent.leftChild = val;
+		else
+			parent.rightChild = val;
+	}
+}
+
+inline void ProximityTree_Addon::ProximityTree::clearNode(uint32_t node_id)
+{
+	Node& node = _array[node_id];
+	node._nodeID = -1;
+	node.parent = -1;
+	node.leftChild = -1;
+	node.rightChild = -1;
+}
+
+inline int32_t ProximityTree_Addon::ProximityTree::Sibling(Node& node)
+{
+	if (node.parent != -1) {
+		Node& parent = _array[node.parent];
+		if (parent.leftChild == node._nodeID)
+			return parent.rightChild;
+		else
+			return parent.leftChild;
+	}
+	return -1;
+}
+
+
 
