@@ -16,7 +16,10 @@ uint32_t ProximityTree::Insert(double latitude, double longitude)
 	double global_dist = haversine(ref_lat, ref_long, latitude, longitude);
 	
 	insert_index = initNode(latitude, longitude, global_dist);
-	RInsert(insert_index, global_dist);
+	RInsert(root, global_dist); 
+
+	++size;
+
 	return insert_index;
 }
 

@@ -57,6 +57,7 @@ namespace ProximityTree_Addon {
 		const double ref_lat, ref_long;
 		uint32_t position = 0u;
 		uint32_t root = 0u;
+		uint32_t size = 0u;
 
 	};
 

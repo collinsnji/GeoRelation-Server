@@ -35,7 +35,6 @@ namespace ProximityTree_Addon {
 		tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
 		// Prototype
-		NODE_SET_PROTOTYPE_METHOD(tpl, "plusOne", PlusOne);
 		NODE_SET_PROTOTYPE_METHOD(tpl, "Insert", Insert);
 
 		constructor.Reset(isolate, tpl->GetFunction());
@@ -77,15 +76,6 @@ namespace ProximityTree_Addon {
 			Local<Function> cons = Local<Function>::New(isolate, constructor);
 			args.GetReturnValue().Set(cons->NewInstance(argc, argv));
 		}
-	}
-
-	void ProximityTree_Wrap::PlusOne(const FunctionCallbackInfo<Value>& args) {
-		Isolate* isolate = args.GetIsolate();
-
-		ProximityTree_Wrap* obj = ObjectWrap::Unwrap<ProximityTree_Wrap>(args.Holder());
-		obj->value_ += 1;
-
-		args.GetReturnValue().Set(Number::New(isolate, obj->value_));
 	}
 
 	//args: latitude, longitude 
