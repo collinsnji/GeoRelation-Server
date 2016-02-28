@@ -13,12 +13,53 @@ ProximityTree::Node* ProximityTree::Insert(double latitude, double longitude)
 {
 	double global_dist = haversine(ref_lat, ref_long, latitude, longitude);
 	
-	uint32_t node_id = initNode(latitude, longitude, global_dist);
-	return getNodeID(node_id);
+	insert_index = initNode(latitude, longitude, global_dist);
+	RInsert(insert_index, global_dist);
+	return getNodeID(insert_index);
 }
 
-uint32_t ProximityTree::RInsert(uint32_t index, double key)
+uint32_t ProximityTree::RInsert(uint32_t index, double dist)
 {
+	//get a reference to the node
+	Node& node = _array[index];
+	if (!node.isInitialized()) {
+		return insert_index;
+	}
+
+	if (dist < _array[index].global_dist)
+		node.leftChild = RInsert(node.leftChild, dist);
+	else
+		node.rightChild = RInsert(node.rightChild, dist);
+
+	node.height = Max(Height(node.leftChild), Height(node.rightChild)) + 1;
+
+	int balance = getBalance(index);
+
+	//Check the balance of the node 4 cases
+
+	//LEFT LEFT
+	if (balance > 1 && dist < _array[node.leftChild].global_dist) {
+		return rightRotate(index);
+	}
+
+	//RIGHT RIGHT
+	if (balance < -1 && dist < _array[node.rightChild].global_dist) {
+		return leftRotate(index);
+	}
+
+	//Left Right
+	if (balance > 1 && dist > _array[node.leftChild].global_dist) {
+		node.leftChild = leftRotate(node.leftChild);
+		return rightRotate(index);
+	}
+
+	//Right Left
+	if (balance < -1 && dist < _array[node.rightChild].global_dist) {
+		node.rightChild = rightRotate(node.rightChild);
+		return leftRotate(index);
+	}
+
+	return index;
 
 }
 

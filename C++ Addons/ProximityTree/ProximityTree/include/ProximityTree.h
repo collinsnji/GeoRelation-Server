@@ -45,7 +45,9 @@ private:
 	uint32_t leftRotate(uint32_t x);
 	uint32_t rightRotate(uint32_t y);
 
-	uint32_t RInsert(uint32_t index, double key);
+	uint32_t RInsert(uint32_t index, double dist);
+
+	uint32_t insert_index;
 
 	int capacity;
 
