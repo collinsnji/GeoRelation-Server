@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include "Haversine.h"
+#include <stack>
 
 namespace ProximityTree_Addon {
 
@@ -59,10 +60,15 @@ namespace ProximityTree_Addon {
 		uint32_t capacity;
 
 		Node* _array;
+		std::stack<uint32_t> Removed;
+
 		const double ref_lat, ref_long;
+
 		uint32_t position = 0u;
 		uint32_t root = 0u;
 		uint32_t size = 0u;
+
+		int32_t minValueNode(uint32_t index);
 
 	};
 

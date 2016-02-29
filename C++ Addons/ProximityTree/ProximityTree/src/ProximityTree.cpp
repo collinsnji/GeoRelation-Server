@@ -91,14 +91,26 @@ inline uint32_t ProximityTree::getBalance(uint32_t index)
 
 uint32_t ProximityTree::initNode(double lat, double lon, double dist)
 {
-	//TODO: Add functionality such that removed nodes get their places re used by new nodes
 
-	Node& node = _array[position];
-	node._nodeID = position++;
-	node.global_dist = dist;
-	node.latitude = lat;
-	node.longitude = lon;
-	return node._nodeID;
+	if (Removed.size() > 0) {
+		uint32_t pos = Removed.top();
+		Removed.pop();
+		Node& node = _array[pos];
+		node._nodeID = pos;
+		node.global_dist = dist;
+		node.latitude = lat;
+		node.longitude = lon;
+		return pos;
+	}
+	else {
+		Node& node = _array[position];
+		node._nodeID = position++;
+		node.global_dist = dist;
+		node.latitude = lat;
+		node.longitude = lon;
+		return node._nodeID;
+	}
+
 }
 
 //AVL Tree leftRotate implementation
@@ -177,7 +189,9 @@ uint32_t ProximityTree::rightRotate(uint32_t y)
 
 void ProximityTree_Addon::ProximityTree::Remove(uint32_t node_id)
 {
-	
+	RRemove(root, _array[node_id].global_dist);
+	--size;
+	Removed.push(node_id);
 }
 
 uint32_t ProximityTree_Addon::ProximityTree::RRemove(uint32_t index, double dist)
@@ -212,9 +226,48 @@ uint32_t ProximityTree_Addon::ProximityTree::RRemove(uint32_t index, double dist
 		}
 		else {
 
+			int32_t temp = minValueNode(node.rightChild);
+
+			node.global_dist = _array[temp].global_dist;
+			node.latitude = _array[temp].latitude;
+			node.longitude = _array[temp].longitude;
+
+			node.rightChild = RRemove(node.rightChild, _array[temp].global_dist);
+
 		}
 
 	}
+
+	node.height = Max(Height(node.leftChild), Height(node.rightChild)) + 1;
+
+	int balance = getBalance(index);
+	int lBalance = getBalance(node.leftChild);
+	int rBalance = getBalance(node.rightChild);
+
+	if (balance > 1 && lBalance >= 0)
+		return rightRotate(index);
+
+	if (balance > 1 && lBalance < 0) {
+		node.leftChild = leftRotate(node.leftChild);
+		return rightRotate(index);
+	}
+
+	if (balance < -1 && rBalance <= 0)
+		return leftRotate(index);
+
+	if (balance < -1 && rBalance > 0) {
+		node.rightChild = rightRotate(node.rightChild);
+		return leftRotate(index);
+	}
+
+	return index;
+}
+
+int32_t ProximityTree_Addon::ProximityTree::minValueNode(uint32_t index)
+{
+
+	while (_array[index].leftChild != -1)
+		index = _array[index].leftChild;
 
 	return index;
 }
