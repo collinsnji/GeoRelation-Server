@@ -29,6 +29,7 @@ namespace ProximityTree_Addon {
 
 		ProximityTree(int capacity, double ref_lat, double ref_long);
 		uint32_t Insert(double latitude, double longitude);
+		uint32_t getRoot() const;
 		void Remove(uint32_t node_id);
 
 		Node* getNodeID(uint32_t id) {
@@ -36,6 +37,7 @@ namespace ProximityTree_Addon {
 			Node* ptr = _array + id;
 			return (ptr->_nodeID != -1) ? ptr : nullptr;
 		}
+		void PrintOut(int32_t index) const;
 
 		~ProximityTree();
 

@@ -36,6 +36,9 @@ namespace ProximityTree_Addon {
 
 		// Prototype
 		NODE_SET_PROTOTYPE_METHOD(tpl, "Insert", Insert);
+		NODE_SET_PROTOTYPE_METHOD(tpl, "Remove", Remove);
+		NODE_SET_PROTOTYPE_METHOD(tpl, "PrintOut", PrintOut);
+		NODE_SET_PROTOTYPE_METHOD(tpl, "GetRoot", GetRoot);
 
 		constructor.Reset(isolate, tpl->GetFunction());
 		exports->Set(String::NewFromUtf8(isolate, "ProximityTree"),
@@ -102,6 +105,52 @@ namespace ProximityTree_Addon {
 		uint32_t node = obj->_tree.Insert(args[0]->NumberValue(), args[1]->NumberValue());
 
 		args.GetReturnValue().Set(v8::Integer::NewFromUnsigned(isolate, node));
+
+	}
+
+	void ProximityTree_Wrap::Remove(const v8::FunctionCallbackInfo<v8::Value>& args)
+	{
+		//Gets the reference to the v8 engine
+		Isolate* isolate = args.GetIsolate();
+
+		if (args.Length() < 1) {
+			isolate->ThrowException(v8::Exception::TypeError(
+				String::NewFromUtf8(isolate, "Missing argument: NodeID")));
+		}
+
+		ProximityTree_Wrap* obj = ObjectWrap::Unwrap<ProximityTree_Wrap>(args.Holder());
+		
+		int32_t node = args[0]->IsUndefined() ? 0 : args[0]->Int32Value();
+		obj->_tree.Remove(node);
+
+	}
+
+	void ProximityTree_Wrap::PrintOut(const v8::FunctionCallbackInfo<v8::Value>& args)
+	{
+
+		Isolate* isolate = args.GetIsolate();
+
+		int32_t node = 0;
+		if (args.Length() >= 1) {
+			node = args[0]->IsUndefined() ? 0 : args[0]->Int32Value();
+		}
+
+		ProximityTree_Wrap* obj = ObjectWrap::Unwrap<ProximityTree_Wrap>(args.Holder());
+
+		obj->_tree.PrintOut(node);
+
+	}
+
+	void ProximityTree_Wrap::GetRoot(const v8::FunctionCallbackInfo<v8::Value>& args)
+	{
+
+		Isolate* isolate = args.GetIsolate();
+
+		ProximityTree_Wrap* obj = ObjectWrap::Unwrap<ProximityTree_Wrap>(args.Holder());
+
+		uint32_t root = obj->_tree.getRoot(); 
+
+		args.GetReturnValue().Set(v8::Integer::NewFromUnsigned(isolate, root));
 
 	}
 

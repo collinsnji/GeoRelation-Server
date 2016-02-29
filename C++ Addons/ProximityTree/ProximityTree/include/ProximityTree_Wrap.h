@@ -19,6 +19,10 @@ namespace ProximityTree_Addon {
 
 		static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void Insert(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void Remove(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void PrintOut(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void GetRoot(const v8::FunctionCallbackInfo<v8::Value>& args);
+
 		static v8::Persistent<v8::Function> constructor;
 		ProximityTree _tree;
 	};

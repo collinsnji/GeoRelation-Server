@@ -187,11 +187,26 @@ uint32_t ProximityTree::rightRotate(uint32_t y)
 
 }
 
+uint32_t ProximityTree_Addon::ProximityTree::getRoot() const
+{
+	return this->root;
+}
+
 void ProximityTree_Addon::ProximityTree::Remove(uint32_t node_id)
 {
 	RRemove(root, _array[node_id].global_dist);
 	--size;
 	Removed.push(node_id);
+}
+
+void ProximityTree_Addon::ProximityTree::PrintOut(int32_t index) const
+{
+	if (index < 0 || index >= static_cast<int32_t>(capacity)) return;
+	Node& node = _array[index];
+	if (node._nodeID == -1) return;
+	fprintf_s(stdout, "Node %i\nLatitude: %f\nLongitude: %f \n\n", index, node.latitude, node.longitude);
+	PrintOut(node.leftChild);
+	PrintOut(node.rightChild);
 }
 
 uint32_t ProximityTree_Addon::ProximityTree::RRemove(uint32_t index, double dist)
@@ -283,6 +298,10 @@ inline void ProximityTree_Addon::ProximityTree::sever(Node& node, int32_t val /*
 		else
 			parent.rightChild = val;
 	}
+	else if (val != -1)
+		root = val;
+	else
+		root = 0;
 }
 
 inline void ProximityTree_Addon::ProximityTree::clearNode(uint32_t node_id)
