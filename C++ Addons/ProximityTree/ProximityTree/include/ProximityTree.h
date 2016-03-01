@@ -26,11 +26,16 @@ namespace ProximityTree_Addon {
 			bool isInitialized() const { return _nodeID != -1; }
 			bool isRoot() const { return parent == -1; }
 		};
+		struct Nearby {
+			int32_t node = -1;
+			double distance;
+		};
 
 		ProximityTree(int capacity, double ref_lat, double ref_long);
 		uint32_t Insert(double latitude, double longitude);
 		uint32_t getRoot() const;
 		void Remove(uint32_t node_id);
+		const Nearby* FindNearby(uint32_t node_id, double benchMark);
 
 		Node* getNodeID(uint32_t id) {
 			if (id >= capacity) return nullptr;
@@ -42,6 +47,9 @@ namespace ProximityTree_Addon {
 		~ProximityTree();
 
 	private:
+
+		inline void NearbyTraversal(int32_t index, 
+			const double lat, const double lon, const double ref_dist, const double dist_to_index);
 
 		inline uint32_t Height(uint32_t index);
 		inline uint32_t getBalance(uint32_t index);
@@ -60,6 +68,10 @@ namespace ProximityTree_Addon {
 		uint32_t insert_index;
 
 		uint32_t capacity;
+
+		double _benchMark;
+		Nearby* nearby_result_array;
+		uint32_t nearby_position = 0;
 
 		Node* _array;
 		std::stack<uint32_t> Removed;

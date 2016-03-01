@@ -8,6 +8,7 @@ ProximityTree::ProximityTree(int capacity, double ref_lat, double ref_long)
 	: ref_lat(ref_lat), ref_long(ref_long)
 {
 	_array = new Node[capacity];
+	nearby_result_array = new Nearby[capacity];
 	this->capacity = static_cast<uint32_t>(capacity);
 }
 
@@ -199,6 +200,57 @@ void ProximityTree_Addon::ProximityTree::Remove(uint32_t node_id)
 	Removed.push(node_id);
 }
 
+const ProximityTree::Nearby* ProximityTree_Addon::ProximityTree::FindNearby(uint32_t node_id, double benchmark)
+{
+	_benchMark = benchmark;
+
+	const Node& reference = _array[node_id];
+	const double latitude = reference.latitude;
+	const double longitude = reference.longitude;
+	const double distance = reference.global_dist;
+	
+	//Find the highest node on the tree which fits within the distance benchmark
+	int32_t index = node_id;
+
+	while (haversine(latitude, longitude, _array[index].latitude, _array[index].longitude) < benchmark
+		|| (index = _array[index].parent) != root);
+
+	nearby_position = 0;
+
+	NearbyTraversal(index, latitude, longitude, distance, 
+		haversine(latitude, longitude, _array[index].latitude, _array[index].longitude));
+
+	nearby_result_array[nearby_position].node = -1;
+
+	return nearby_result_array;
+
+}
+
+void ProximityTree_Addon::ProximityTree::NearbyTraversal(int32_t index,
+	const double lat, const double lon, const double ref_dist, const double dist_to_index)
+{
+	if (index < 0 || index >= capacity) return;
+
+	Node& ref = _array[index];
+	//Add the current node to the list
+	Nearby& nearby = nearby_result_array[nearby_position++];
+	nearby.distance = dist_to_index;
+	nearby.node = index;
+	
+	Node& lRef = _array[ref.leftChild];
+	Node& rRef = _array[ref.rightChild];
+
+	double lDist = haversine(lRef.latitude, lRef.longitude, lat, lon);
+	double rDist = haversine(rRef.latitude, rRef.longitude, lat, lon);
+
+	if (lDist > _benchMark)
+		NearbyTraversal(lRef._nodeID, lat, lon, ref_dist, lDist);
+	if (rDist > _benchMark)
+		NearbyTraversal(rRef._nodeID, lat, lon, ref_dist, rDist);
+
+}
+
+
 void ProximityTree_Addon::ProximityTree::PrintOut(int32_t index) const
 {
 	if (index < 0 || index >= static_cast<int32_t>(capacity)) return;
@@ -324,6 +376,4 @@ inline int32_t ProximityTree_Addon::ProximityTree::Sibling(Node& node)
 	}
 	return -1;
 }
-
-
 

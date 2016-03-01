@@ -20,7 +20,6 @@ namespace ProximityTree_Addon {
 	ProximityTree_Wrap::ProximityTree_Wrap(int capacity, double ref_lat, double ref_long)
 		: _tree(capacity, ref_lat, ref_long) 
 	{
-
 	}
 
 	ProximityTree_Wrap::~ProximityTree_Wrap() {
@@ -151,6 +150,16 @@ namespace ProximityTree_Addon {
 		uint32_t root = obj->_tree.getRoot(); 
 
 		args.GetReturnValue().Set(v8::Integer::NewFromUnsigned(isolate, root));
+
+	}
+
+	void ProximityTree_Wrap::GetNearby(const v8::FunctionCallbackInfo<v8::Value>& args)
+	{
+
+		Isolate* isolate = args.GetIsolate();
+
+		ProximityTree_Wrap* obj = ObjectWrap::Unwrap<ProximityTree_Wrap>(args.Holder());
+
 
 	}
 
