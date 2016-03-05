@@ -35,7 +35,7 @@ namespace ProximityTree_Addon {
 		uint32_t Insert(double latitude, double longitude);
 		uint32_t getRoot() const;
 		void Remove(uint32_t node_id);
-		const Nearby* FindNearby(uint32_t node_id, double benchMark);
+		const Nearby* FindNearby(uint32_t node_id, double benchMark, int* pNum = nullptr);
 
 		Node* getNodeID(uint32_t id) {
 			if (id >= capacity) return nullptr;

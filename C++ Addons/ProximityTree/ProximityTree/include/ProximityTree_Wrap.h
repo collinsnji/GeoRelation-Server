@@ -23,6 +23,7 @@ namespace ProximityTree_Addon {
 		static void PrintOut(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void GetRoot(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void GetNearby(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void updateLocation(const v8::FunctionCallbackInfo<v8::Value>& args);
 
 		static v8::Persistent<v8::Function> constructor;
 		ProximityTree _tree;

@@ -38,6 +38,8 @@ namespace ProximityTree_Addon {
 		NODE_SET_PROTOTYPE_METHOD(tpl, "Remove", Remove);
 		NODE_SET_PROTOTYPE_METHOD(tpl, "PrintOut", PrintOut);
 		NODE_SET_PROTOTYPE_METHOD(tpl, "GetRoot", GetRoot);
+		NODE_SET_PROTOTYPE_METHOD(tpl, "GetNearby", GetNearby);
+		NODE_SET_PROTOTYPE_METHOD(tpl, "updateLocation", updateLocation);
 
 		constructor.Reset(isolate, tpl->GetFunction());
 		exports->Set(String::NewFromUtf8(isolate, "ProximityTree"),
@@ -158,8 +160,71 @@ namespace ProximityTree_Addon {
 
 		Isolate* isolate = args.GetIsolate();
 
+		if (args.Length() < 2) {
+			isolate->ThrowException(v8::Exception::TypeError(
+				v8::String::NewFromUtf8(isolate, "Missing arguments, required arguments for GetNearby() are NodeID and Benchmark")));
+			return;
+		}
+
+		int32_t node_id = args[0]->Int32Value();
+		double benchmark = args[1]->NumberValue();
+
+
 		ProximityTree_Wrap* obj = ObjectWrap::Unwrap<ProximityTree_Wrap>(args.Holder());
 
+		int arr_size;
+		const ProximityTree::Nearby* result_array =  obj->_tree.FindNearby(node_id, benchmark, &arr_size);
+
+		v8::Handle<v8::Array> arr = v8::Array::New(isolate, arr_size);
+
+		for (int i = 0; i < arr_size; ++i) {
+			v8::Local<v8::ObjectTemplate> nearby_templ = v8::ObjectTemplate::New(isolate);
+			nearby_templ->SetInternalFieldCount(2);
+
+			nearby_templ->Set(isolate, "Node", v8::Integer::New(isolate, result_array[i].node));
+			nearby_templ->Set(isolate, "Distance", v8::Number::New(isolate, result_array[i].distance));
+			
+			arr->Set(i, nearby_templ->NewInstance());
+		
+		}
+
+		args.GetReturnValue().Set(arr);
+
+	}
+
+	void ProximityTree_Wrap::updateLocation(const v8::FunctionCallbackInfo<v8::Value>& args)
+	{
+		Isolate* isolate = args.GetIsolate();
+
+		if (args.Length() < 3) {
+			isolate->ThrowException(v8::Exception::TypeError(
+				String::NewFromUtf8(isolate, "Wrong number of arguments for updateLocation")));
+			return;
+		}
+
+		if (args[0]->IsUndefined()) {
+			isolate->ThrowException(v8::Exception::TypeError(
+				String::NewFromUtf8(isolate, "Invalid rgument: NodeID")));
+			return;
+		}
+
+		if (args[1]->IsUndefined()) {
+			isolate->ThrowException(v8::Exception::TypeError(
+				String::NewFromUtf8(isolate, "Invalid Argument: latitude")));
+			return;
+		}
+
+		if (args[2]->IsUndefined()) {
+			isolate->ThrowException(v8::Exception::TypeError(
+				String::NewFromUtf8(isolate, "Invalid Argument: Longitude")));
+			return;
+		}
+
+
+		ProximityTree_Wrap* obj = ObjectWrap::Unwrap<ProximityTree_Wrap>(args.Holder());
+		int32_t node = obj->_tree.update_node_location(args[0]->Int32Value(), args[0]->NumberValue(), args[1]->NumberValue());
+
+		args.GetReturnValue().Set(v8::Integer::NewFromUnsigned(isolate, node));
 
 	}
 

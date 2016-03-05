@@ -200,7 +200,7 @@ void ProximityTree_Addon::ProximityTree::Remove(uint32_t node_id)
 	Removed.push(node_id);
 }
 
-const ProximityTree::Nearby* ProximityTree_Addon::ProximityTree::FindNearby(uint32_t node_id, double benchmark)
+const ProximityTree::Nearby* ProximityTree_Addon::ProximityTree::FindNearby(uint32_t node_id, double benchmark, int* pNum /* = nullptr */)
 {
 	_benchMark = benchmark;
 
@@ -221,6 +221,9 @@ const ProximityTree::Nearby* ProximityTree_Addon::ProximityTree::FindNearby(uint
 		haversine(latitude, longitude, _array[index].latitude, _array[index].longitude));
 
 	nearby_result_array[nearby_position].node = -1;
+
+	if (pNum != nullptr)
+		*pNum = nearby_position;
 
 	return nearby_result_array;
 
