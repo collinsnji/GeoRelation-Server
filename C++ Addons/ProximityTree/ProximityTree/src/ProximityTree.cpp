@@ -261,6 +261,13 @@ void ProximityTree_Addon::ProximityTree::PrintOut(int32_t index) const
 	PrintOut(node.rightChild);
 }
 
+int32_t ProximityTree_Addon::ProximityTree::update_node_location(uint32_t id, double lat, double lon)
+{
+	if (id >= capacity) return -1;
+	Node& node = _array[id];
+
+}
+
 uint32_t ProximityTree_Addon::ProximityTree::RRemove(uint32_t index, double dist)
 {
 

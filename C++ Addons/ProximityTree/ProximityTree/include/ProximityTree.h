@@ -44,6 +44,8 @@ namespace ProximityTree_Addon {
 		}
 		void PrintOut(int32_t index) const;
 
+		int32_t update_node_location(uint32_t id, double lat, double lon);
+
 		~ProximityTree();
 
 	private:
