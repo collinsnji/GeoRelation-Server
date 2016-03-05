@@ -266,6 +266,39 @@ int32_t ProximityTree_Addon::ProximityTree::update_node_location(uint32_t id, do
 	if (id >= capacity) return -1;
 	Node& node = _array[id];
 
+	double new_dist = haversine(lat, lon, ref_lat, ref_long);
+
+	//First check parent
+	bool reinsert = false;
+	if (node.parent != -1) {
+		Node& node_parent = _array[node.parent];
+		reinsert = (node_parent.leftChild == node._nodeID && node_parent.global_dist <= new_dist)
+			|| (node_parent.rightChild == node._nodeID && node_parent.global_dist > new_dist);
+	}
+
+	//Now check left child
+	if (!reinsert && node.leftChild != -1) {
+		Node& node_left = _array[node.leftChild];
+		reinsert = (node_left.global_dist > new_dist);
+	}
+
+	if (!reinsert && node.rightChild != -1) {
+		Node& node_right = _array[node.rightChild];
+		reinsert = (node_right.global_dist < new_dist);
+	}
+
+	if (reinsert) 
+	{
+		Remove(id);
+		return Insert(lat, lon);
+	}
+	else {
+		node.global_dist = new_dist;
+		node.latitude = lat;
+		node.longitude = lon;
+		return id;
+	}
+
 }
 
 uint32_t ProximityTree_Addon::ProximityTree::RRemove(uint32_t index, double dist)
