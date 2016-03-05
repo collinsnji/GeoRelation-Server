@@ -1,16 +1,16 @@
 // addon.cc
 #include <node.h>
-#include "MyObject.h"
+#include "ProximityTree_Wrap.h"
 
-namespace Addon {
+namespace ProximityTree_Addon {
 
 	using v8::Local;
 	using v8::Object;
 
 	void InitAll(Local<Object> exports) {
-		MyObject::Init(exports);
+		ProximityTree_Wrap::Init(exports);
 	}
 
-	NODE_MODULE(NodeAddon, InitAll)
+	NODE_MODULE(ProximityTree, InitAll)
 
 }  // namespace Addon
