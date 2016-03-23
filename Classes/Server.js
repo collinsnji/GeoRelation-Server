@@ -24,6 +24,21 @@ function ProximityUser(UserId, initialLocation, sessToken, _data) {
     this.geoLocation = initialLocation;
     this.sessToken = sessToken;
     this.data = _data;
+
+    var timeoutid = 0;
+
+    this.setUserTimeout = function(ProximityApi, timeout) {
+
+        if (timeoutid != 0) {
+            clearTimeout(timeoutid);
+        }
+        timeoutid = setTimeout(function () {
+            console.log("User session, UserID: {0}, SessToken: {1} just timed out!", UserId, sessToken);
+            ProximityApi.RemoveUser(this);
+        }, timeout);
+
+    }
+
 }
 
 //Constructs object that interfaces with the c++ data structure ProximityTree
@@ -87,8 +102,13 @@ function ProximityAPI(distanceBenchmark, cbGetGeoLocation, capacity) {
 
 function generateSessionToken(UserId) {
 
-    var salt = "@#$SDFG$$%#$DFGDFG@T@#$@FBFB#$%#$#FGRFRGRG#TG#$G#$G#$G$G$G";
-    var token = SHA256(salt + UserId);
+    var token = SHA256(UserId);
+
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 5; i++ )
+        token += possible.charAt(Math.floor(Math.random() * possible.length));
+
     return token;
 
 }
@@ -96,19 +116,20 @@ function generateSessionToken(UserId) {
 function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity) {
 
     var api = ProximityAPI(distanceBenchmark, cbGetGeoLocation, capacity);
-    var sockio = new ioModule(app);
+    var sockio = new ioModule(app, {serveClient: true});
 
     //Create a session token for a user and add a timeout for this user
     sockio.on('create_sess', function(data) {
         if (data.UserId == undefined || api.IsUserRegistered(data.UserId)) {
             //The user is already registered, ignore his attempt to recreate the session
-
             return;
         }
 
         var token = generateSessionToken(data.UserId);
 
         var User = ProximityUser(data.userId, data.geoLocation, token, data._data);
+
+        User.setUserTimeout(api, 600000);
 
 
 
