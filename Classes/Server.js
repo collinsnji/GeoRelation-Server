@@ -22,23 +22,9 @@ function ProximityUser(UserId, initialLocation, sessToken, _data) {
     this.UserId = UserId;
     this.treeIndex = -1;
     this.geoLocation = initialLocation;
-    this.sessToken = sessToken;
+    this.SessToken = sessToken;
     this.data = _data;
-
-    var timeoutid = 0;
-
-    this.setUserTimeout = function(ProximityApi, timeout) {
-
-        if (timeoutid != 0) {
-            clearTimeout(timeoutid);
-        }
-        timeoutid = setTimeout(function () {
-            console.log("User session, UserID: {0}, SessToken: {1} just timed out!", UserId, sessToken);
-            ProximityApi.RemoveUser(this);
-        }, timeout);
-
-    }
-
+    this.timeoutid = 0;
 }
 
 //Constructs object that interfaces with the c++ data structure ProximityTree
@@ -113,27 +99,170 @@ function generateSessionToken(UserId) {
 
 }
 
-function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity) {
+function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity, userTimeOut) {
 
-    var api = ProximityAPI(distanceBenchmark, cbGetGeoLocation, capacity);
+    var api = new ProximityAPI(distanceBenchmark, cbGetGeoLocation, capacity);
     var sockio = new ioModule(app, {serveClient: true});
 
-    //Create a session token for a user and add a timeout for this user
-    sockio.on('create_sess', function(data) {
-        if (data.UserId == undefined || api.IsUserRegistered(data.UserId)) {
-            //The user is already registered, ignore his attempt to recreate the session
-            return;
+    //Logging
+    var verbose = false;
+
+    //Callbacks
+    var cbNewSession = null;
+
+    var ValidTokens = {};
+    var Users = {};
+
+    var isValidatedUserData = function(data) {
+        var id = data.UserId;
+        var token = data.SessToken;
+
+        var tokenExists = id != undefined && token != undefined && (id in ValidTokens);
+
+        return (id != undefined && api.IsUserRegistered(id) && tokenExists && token === ValidTokens[id]);
+    };
+
+    var error = function(socket, message) {
+        console.log(message);
+        socket.emit('error', message);
+    };
+
+    var CustomEvents = [];
+
+    var setUserTimeout = function(User, timeout) {
+
+        var timeoutid = setTimeout(function() {
+            api.RemoveUser(User);
+            ValidTokens.remove(User.UserId);
+            Users.remove(User.UserId);
+        }, timeout);
+
+        if (User.timeoutid != 0)
+            clearTimeout(User.timeoutid);
+
+        User.timeoutid = timeoutid;
+
+    };
+
+    //All event definitions go here
+    sockio.on('connection', function(socket) {
+
+        var address = socket.handshake.address;
+        console.log("New Socket Connection: {0}:{1}", address.address, address.port);
+
+        //Create a session token for a user and add a timeout for this user
+        socket.on('create_sess', function(data) {
+            if (data.UserId == undefined || api.IsUserRegistered(data.UserId)) {
+                //The user is already registered, ignore his attempt to recreate the session
+                socket.emit('error', 'A session already exists for this user');
+                return;
+            }
+
+            var token = generateSessionToken(data.UserId);
+            ValidTokens[data.UserId] = token;
+
+            var User = new ProximityUser(data.UserId, data.geoLocation, token, data._data);
+
+            setUserTimeout(api, userTimeOut);
+
+            Users[data.UserId] = User;
+
+            if (cbNewSession != null)
+                cbNewSession(User);
+
+            socket.emit('session_init', {
+                SessToken: token,
+                TimeOut: userTimeOut
+            });
+
+        });
+
+        socket.on('update_location', function(data) {
+            if (isValidatedUserData(data)) {
+                Error(socket, "Failed update_location request, validation failed!");
+                return;
+            } else if (data.geoLocation == undefined) {
+                //The user hasn't provided
+                Error(socket, "No geoLocation data provided in 'update_location'");
+                return;
+            }
+
+            if (verbose)
+                console.log("update_location request {0}", JSON.stringify(data));
+            else
+                console.log("update location request");
+
+            //The proper checks have been done to make sure this user is in this dictionary
+            var User = Users[data.UserId];
+            setUserTimeout(api, userTimeOut);
+            User.geoLocation = data.geoLocation;
+
+            api.UpdateUser(User);
+
+        });
+
+        socket.on('get_nearby', function(data) {
+            if (isValidatedUserData(data)) {
+                Error(socket, "Failed update_location request, validation failed!");
+                return;
+            } else if (data.geoLocation == undefined) {
+                //The user hasn't provided
+                Error(socket, "No geoLocation data provided in 'update_location'");
+                return;
+            }
+
+            if (verbose)
+                console.log("get_nearby request {0}", JSON.stringify(data));
+            else
+                console.log("get_nearby request");
+
+            var User = Users[data.UserId];
+            setUserTimeout(api, userTimeOut);
+            var nearby = api.GetNearbyUsers(User);
+
+            console.log("Found nearby users for {0}: \n{1}", User.UserId, JSON.stringify(nearby));
+
+        });
+
+        for (var event in CustomEvents) {
+            socket.on(event.EventName, function(data) {
+                if (isValidatedUserData(data)) {
+                    Error(socket, "Failed update_location request, validation failed!");
+                    return;
+                } else if (data.geoLocation == undefined) {
+                    //The user hasn't provided
+                    Error(socket, "No geoLocation data provided in 'update_location'");
+                    return;
+                }
+
+                if (verbose)
+                    console.log("{1} request {0}", JSON.stringify(data), event.EventName);
+                else
+                    console.log("{0} request", event.EventName);
+
+                var User = Users[data.UserId];
+                User.setUserTimeout(api, userTimeOut);
+                event.Callback(data, User);
+            });
         }
 
-        var token = generateSessionToken(data.UserId);
-
-        var User = ProximityUser(data.userId, data.geoLocation, token, data._data);
-
-        User.setUserTimeout(api, 600000);
-
-
-
     });
+
+    this.registerCustomEvent = function(EventName, cbOnEvent){
+        CustomEvents.add({
+            EventName: EventName,
+            Callback: cbOnEvent
+        });
+    };
+    this.setNewSessionCallback = function(cb) {
+        cbNewSession = cb;
+    };
+    this.getVerbose = function() {
+        return verbose;
+    };
+    this.setVerbose = function(val) {
+        verbose = val;
+    };
 
 }
 
