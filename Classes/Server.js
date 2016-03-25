@@ -205,10 +205,6 @@ function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity, u
             if (isValidatedUserData(data)) {
                 Error(socket, "Failed update_location request, validation failed!");
                 return;
-            } else if (data.geoLocation == undefined) {
-                //The user hasn't provided
-                Error(socket, "No geoLocation data provided in 'update_location'");
-                return;
             }
 
             if (verbose)
@@ -224,14 +220,25 @@ function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity, u
 
         });
 
+        socket.on('disconnect', function(data) {
+            if (isValidatedUserData(data)) {
+                Error(socket, "Failed disconnect request, validation failed!");
+                return;
+            }
+
+            var User = Users[data.UserId];
+            api.RemoveUser(User);
+            ValidTokens.remove(User.UserId);
+            Users.remove(User.UserId);
+
+            socket.close();
+
+        });
+
         for (var event in CustomEvents) {
             socket.on(event.EventName, function(data) {
                 if (isValidatedUserData(data)) {
                     Error(socket, "Failed update_location request, validation failed!");
-                    return;
-                } else if (data.geoLocation == undefined) {
-                    //The user hasn't provided
-                    Error(socket, "No geoLocation data provided in 'update_location'");
                     return;
                 }
 
@@ -241,7 +248,7 @@ function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity, u
                     console.log("{0} request", event.EventName);
 
                 var User = Users[data.UserId];
-                User.setUserTimeout(api, userTimeOut);
+                setUserTimeout(api, userTimeOut);
                 event.Callback(data, User);
             });
         }
