@@ -1,7 +1,7 @@
 /**
  * Created by Gabriel Alacchi on 05/03/2016.
  */
-
+    
 var ProximityTree = require('../C++ Addons/ProximityTree/Debug/ProximityTree');
 var ioModule = require('socket.io');
 var SHA256 = require('crypto-js/sha256');
@@ -272,7 +272,6 @@ function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity, u
     };
 
 }
-
 
 //Export proximity User
 module.exports.ProximityUser = ProximityUser;
