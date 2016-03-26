@@ -232,7 +232,7 @@ const ProximityTree::Nearby* ProximityTree_Addon::ProximityTree::FindNearby(uint
 void ProximityTree_Addon::ProximityTree::NearbyTraversal(int32_t index,
 	const double lat, const double lon, const double ref_dist, const double dist_to_index)
 {
-	if (index < 0 || index >= capacity) return;
+	if (index < 0 || index >= static_cast<int32_t>(capacity)) return;
 
 	Node& ref = _array[index];
 	//Add the current node to the list
