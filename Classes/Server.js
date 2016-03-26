@@ -218,6 +218,8 @@ function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity, u
 
             console.log("Found nearby users for {0}: \n{1}", User.UserId, JSON.stringify(nearby));
 
+            socket.emit('nearby_response', nearby);
+
         });
 
         socket.on('disconnect', function(data) {
