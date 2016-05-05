@@ -2,7 +2,7 @@
  * Created by Gabriel Alacchi on 05/03/2016.
  */
     
-var ProximityTree = require('../C++ Addons/ProximityTree/Debug/ProximityTree');
+var ProximityTree = require('../CPPAddons/ProximityTree/build/Debug/ProximityTree.node');
 var ioModule = require('socket.io');
 var SHA256 = require('crypto-js/sha256');
 
@@ -34,9 +34,17 @@ function ProximityAPI(distanceBenchmark, cbGetGeoLocation, capacity) {
     var users = {};
     var uid_to_tree = {};
 
-    this.geoLocation = cbGetGeoLocation();
+    var geoLocation = null;
+    var tree = null;
 
-    var tree = new ProximityTree.ProximityTree(capacity, this.geoLocation.latitude, this.geoLocation.longitude);
+    this.geoLocation = function() {
+        return geoLocation;
+    };
+    
+    cbGetGeoLocation(function (geo) {
+        geoLocation = geo;
+        tree = new ProximityTree.ProximityTree(capacity, geoLocation.latitude, geoLocation.longitude);
+    });
 
     this.RegisterUser = function(User) {
         User.treeIndex = tree.Insert(User.geoLocation.latitude, User.geoLocation.longitude);
