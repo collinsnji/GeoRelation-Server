@@ -3,7 +3,7 @@
  */
     
 var ProximityTree = require('../CPPAddons/ProximityTree/build/Debug/ProximityTree.node');
-var ioModule = require('socket.io');
+var IOModule = require('socket.io');
 var SHA256 = require('crypto-js/sha256');
 
 /*
@@ -107,10 +107,10 @@ function generateSessionToken(UserId) {
 
 }
 
-function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity, userTimeOut) {
+function geoRelationServer(http, distanceBenchmark, cbGetGeoLocation, capacity, userTimeOut) {
 
     var api = new ProximityAPI(distanceBenchmark, cbGetGeoLocation, capacity);
-    var sockio = new ioModule(app, {serveClient: true});
+    var sockio = new IOModule(http, null);
 
     //Logging
     var verbose = false;
@@ -137,7 +137,7 @@ function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity, u
 
     var CustomEvents = [];
 
-    var setUserTimeout = function(User, timeout) {
+    var setUserTimeout = function(User, timeout, api) {
 
         var timeoutid = setTimeout(function() {
             api.RemoveUser(User);
@@ -156,7 +156,7 @@ function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity, u
     sockio.on('connection', function(socket) {
 
         var address = socket.handshake.address;
-        console.log("New Socket Connection: {0}:{1}", address.address, address.port);
+        console.log("New Socket Connection: " + address.address + ":" + address.port);
 
         //Create a session token for a user and add a timeout for this user
         socket.on('create_sess', function(data) {
@@ -171,7 +171,9 @@ function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity, u
 
             var User = new ProximityUser(data.UserId, data.geoLocation, token, data._data);
 
-            setUserTimeout(api, userTimeOut);
+            setUserTimeout(User, userTimeOut, api);
+
+            api.RegisterUser(User);
 
             Users[data.UserId] = User;
 
@@ -202,7 +204,7 @@ function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity, u
 
             //The proper checks have been done to make sure this user is in this dictionary
             var User = Users[data.UserId];
-            setUserTimeout(api, userTimeOut);
+            setUserTimeout(User, userTimeOut, api);
             User.geoLocation = data.geoLocation;
 
             api.UpdateUser(User);
@@ -221,7 +223,7 @@ function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity, u
                 console.log("get_nearby request");
 
             var User = Users[data.UserId];
-            setUserTimeout(api, userTimeOut);
+            setUserTimeout(User, userTimeOut, api);
             var nearby = api.GetNearbyUsers(User);
 
             console.log("Found nearby users for {0}: \n{1}", User.UserId, JSON.stringify(nearby));
@@ -258,7 +260,7 @@ function geoRelationServer(app, distanceBenchmark, cbGetGeoLocation, capacity, u
                     console.log("{0} request", event.EventName);
 
                 var User = Users[data.UserId];
-                setUserTimeout(api, userTimeOut);
+                setUserTimeout(User, userTimeOut, api);
                 event.Callback(data, User);
             });
         }
