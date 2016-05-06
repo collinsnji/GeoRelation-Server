@@ -54,6 +54,7 @@ function GeoRelationClient(address, cbGetGeoLocation, UserId) {
     this.updateLocation = function(next) {
         cbGetGeoLocation(function(geo) {
             cbOnUpdateCompletion = next;
+            current_geolocation = geo;
             client.emit('update_location', {
                                             geoLocation: geo,
                                             UserId: UserId,
@@ -80,8 +81,8 @@ function random(low, high) {
 
 var Client = new GeoRelationClient("http://localhost:3000", function(next) {
     next({
-        latitude: random(45.4991, 45.5057),
-        longitude: random(73.0012, 74.000)
+        latitude: random(45.4993, 45.4994),
+        longitude: random(73.0001, 73.0002)
     });
 }, "user");
 Client.Connect();
@@ -91,8 +92,8 @@ setInterval(function() {
     Client.updateLocation(function(geo) {
         console.log("Current Coordinates: latitude " + geo.latitude + ", longitude " + geo.longitude)
 
-        client.getNearby(function(result) {
-            console.log(JSON.stringify(result));
+        Client.getNearby(function(result) {
+            console.log("nearby result: " + JSON.stringify(result));
         });
 
     });

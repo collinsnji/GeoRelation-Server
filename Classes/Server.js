@@ -235,6 +235,11 @@ function geoRelationServer(http, distanceBenchmark, cbGetGeoLocation, capacity, 
         });
 
         socket.on('disconnect', function(data) {
+            if (typeof(data) == "string") {
+                console.log("Client disconnected ungracefully");
+                return;
+            }
+
             if (isValidatedUserData(data)) {
                 Error(socket, "Failed disconnect request, validation failed!");
                 return;
