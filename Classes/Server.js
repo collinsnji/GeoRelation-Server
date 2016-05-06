@@ -188,7 +188,7 @@ function geoRelationServer(http, distanceBenchmark, cbGetGeoLocation, capacity, 
         });
 
         socket.on('update_location', function(data) {
-            if (isValidatedUserData(data)) {
+            if (!isValidatedUserData(data)) {
                 Error(socket, "Failed update_location request, validation failed!");
                 return;
             } else if (data.geoLocation == undefined) {
@@ -209,10 +209,12 @@ function geoRelationServer(http, distanceBenchmark, cbGetGeoLocation, capacity, 
 
             api.UpdateUser(User);
 
+            socket.emit('update_complete', null);
+            
         });
 
         socket.on('get_nearby', function(data) {
-            if (isValidatedUserData(data)) {
+            if (!isValidatedUserData(data)) {
                 Error(socket, "Failed update_location request, validation failed!");
                 return;
             }
