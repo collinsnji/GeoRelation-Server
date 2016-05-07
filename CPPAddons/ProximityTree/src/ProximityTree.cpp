@@ -259,7 +259,11 @@ void ProximityTree_Addon::ProximityTree::PrintOut(int32_t index) const
 	if (index < 0 || index >= static_cast<int32_t>(capacity)) return;
 	Node& node = _array[index];
 	if (node._nodeID == -1) return;
+#ifdef WIN32
 	fprintf_s(stdout, "Node %i\nLatitude: %f\nLongitude: %f \n\n", index, node.latitude, node.longitude);
+#else
+    printf("Node %i\nLatitude: %f\nLongitude: %f \n\n", index, node.latitude, node.longitude);
+#endif
 	PrintOut(node.leftChild);
 	PrintOut(node.rightChild);
 }

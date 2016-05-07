@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include "Haversine.h"
 #include <stack>
+#include <stdio.h>
 
 namespace ProximityTree_Addon {
 
